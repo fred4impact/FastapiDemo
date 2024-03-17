@@ -70,7 +70,7 @@ class UpdateRanking(BaseModel):
 
 
 
-# All REQUESTS 
+# All REQUESTS Methods
 
 # Request to get all all items
 @app.get("/universities", status_code=200)
@@ -94,12 +94,21 @@ async def search_university_by_name(name: Optional[str] = None):
 
 
 #Request to create  a new resource by POST
-@app.post("/university/{rank_id}", status_code=201)
-async def university(rank_id: int, ranking: Ranking):
-    if rank_id in rankings:
-        return {"Error": "University already exists"}
-    rankings[rank_id] = ranking.dict()
-    return rankings[rank_id]
+@app.post("/university", status_code=201)
+async def add_university(ranking: Ranking):
+    # Check if the university already exists
+    for uni_id, uni_data in rankings.items():
+        if uni_data["name"] == ranking.name:
+            raise HTTPException(status_code=400, detail="University already exists")
+
+    # Assign a new rank_id
+    new_rank_id = max(rankings.keys()) + 1 if rankings else 1
+
+    # Add the new university to rankings
+    rankings[new_rank_id] = ranking.dict()
+
+    return rankings[new_rank_id]
+
 
 
 #Request to Update an already created Item
